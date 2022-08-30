@@ -1,14 +1,20 @@
 const {Router} = require('express');
 
 const {authController} = require('../controllers')
-const {userMdlwr} = require('../middlewares')
+const {userMdlwr, authMdlwr} = require('../middlewares')
 
 const authRouter = Router();
 
 authRouter.post(
     './login',
     userMdlwr.getUserDynamicaly('body' , 'email', 'email'),
-    authController.login)
+    authController.login);
+
+authRouter.post(
+    '/refresh',
+    authMdlwr.checkIsRefreshToken,
+    authController.refresh
+)
 
 module.exports = authRouter;
 
