@@ -2,19 +2,20 @@ const {ApiError} = require('../errors');
 const {statusCodes} = require('../constants');
 const {userService} = require('../services');
 const {User} = require('../dataBase/User');
+const userValidators = require('../validators/user.validators');
+
 
 module.exports = {
     checkIsUserBodyValid: async (req, res, next) => {
         try {
-            const {age, name} = req.body;
 
-            if (Number.isNaN(+age) || age <= 0) {
-                next(new ApiError('Wrong user age', statusCodes.BAD_REQUEST))
+            const validate = userValidators.newUserValidator.validate(req.body);
+
+            if (validate.error){
+                return next(new ApiError(validate.error.message, statusCodes.BAD_REQUEST))
             }
 
-            if (name.length < 2) {
-                next(new ApiError('Wrong user name', statusCodes.BAD_REQUEST))
-            }
+            req.body = validate.value;
             next();
         } catch (e) {
             next(e)
@@ -27,9 +28,9 @@ module.exports = {
             const {email} = req.body;
             const {userId} = req.params;
 
-            const userByEmail = await userService.getOneByParams({email});
+            const userByEmail = await userService.getOneByParams({email:{$ne:userId}});
 
-            if (userByEmail && userByEmail._id.toString() !== userId) {
+            if (userByEmail) {
                 return next(new ApiError('User with this email is exist', statusCodes.CONFLICT));
             }
 
@@ -56,22 +57,22 @@ module.exports = {
         }
     },
 
-    getUserDynamicaly: (from = 'body', fieldName = 'userId', dbField = fieldName)  =>
+    getUserDynamicaly: (from = 'body', fieldName = 'userId', dbField = fieldName) =>
         async (req, res, next) => {
-        try {
-            const fieldToSearch = req[from][fieldName];
+            try {
+                const fieldToSearch = req[from][fieldName];
 
-            const user = await User.findOne({[dbField]:fieldToSearch});
+                const user = await User.findOne({[dbField]: fieldToSearch});
 
 
-            if (!user) {
-                return next(new ApiError('User not found', statusCodes.NOT_FOUND));
+                if (!user) {
+                    return next(new ApiError('User not found', statusCodes.NOT_FOUND));
+                }
+
+                req.user = user;
+                next();
+            } catch (e) {
+                next(e)
             }
-
-            req.user = user;
-            next();
-        } catch (e) {
-            next(e)
         }
-    }
 }
