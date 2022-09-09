@@ -2,12 +2,13 @@ const {Router} = require("express")
 
 const userController = require("../controllers/User.controller");
 const {userMdlwr, commonMdlwr, authMdlwr} = require("../middlewares");
+const {newUserValidator, updateUserValidator} = require("../validators/user.validators");
 
 const userRouter = Router();
 userRouter.get('/', userController.getAllUsers);
 userRouter.post(
     '/',
-    userMdlwr.checkIsUserBodyValid,
+    commonMdlwr.checkIsUserBodyValid(newUserValidator),
     userMdlwr.checkIsUserEmailUniq,
     userController.createUser
 );
@@ -21,6 +22,7 @@ userRouter.get(
 userRouter.put(
     '/:userId',
     commonMdlwr.checkIsIdValid('userId'),
+    commonMdlwr.checkIsUserBodyValid(updateUserValidator),
     authMdlwr.checkIsAccessToken,
     userMdlwr.isUserPresent,
     userMdlwr.checkIsUserEmailUniq,
