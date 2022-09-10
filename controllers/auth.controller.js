@@ -1,4 +1,11 @@
-const {authService, tokenService, emailService, ActionTokenService, userService} = require("../services");
+const {
+    authService,
+    tokenService,
+    emailService,
+    ActionTokenService,
+    userService,
+    previousPasswordService
+} = require("../services");
 const {statusCodes: {NO_CONTENT}, emailActionEnum, constant} = require("../constants/");
 const {tokenTypeEnum} = require("../constants");
 const {FRONTEND_URL} = require("../configs/config");
@@ -90,7 +97,10 @@ module.exports = {
             const {password} = req.body;
             const token = req.get(constant.AUTHORIZATION)
 
+            await previousPasswordService.savePasswordInfo({password: user.password, user: user._id});
+
             await authService.deleteMany({user: user._id});
+
             await ActionTokenService.deleteOne({token});
 
             const hashPassword = await tokenService.hashPassword(password);

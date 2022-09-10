@@ -2,7 +2,7 @@ const {Router} = require('express');
 
 const {authController} = require('../controllers')
 const {userMdlwr, authMdlwr, commonMdlwr} = require('../middlewares')
-const {loginUserValidator} = require("../validators/user.validators");
+const {loginUserValidator, userEmailValidator, userPasswordValidator} = require("../validators/user.validators");
 const {tokenTypeEnum} = require("../constants");
 
 const authRouter = Router();
@@ -25,14 +25,17 @@ authRouter.post(
 );
 authRouter.post(
     '/password/forgot',
+    commonMdlwr.checkIsUserBodyValid(userEmailValidator),
     userMdlwr.getUserDynamicaly('body', 'email', 'email'),
     authController.forgotPassword
-),
+);
     authRouter.put(
-    '/password/forgot',
-    authMdlwr.checkIsActionToken(tokenTypeEnum.FORGOT_PASSWORD),
-    authController.setNewForgotPassword
-)
+        '/password/forgot',
+        commonMdlwr.checkIsUserBodyValid(userPasswordValidator),
+        authMdlwr.checkIsActionToken(tokenTypeEnum.FORGOT_PASSWORD),
+        authMdlwr.checkPreviousPassword,
+        authController.setNewForgotPassword,
+    );
 
 module.exports = authRouter;
 

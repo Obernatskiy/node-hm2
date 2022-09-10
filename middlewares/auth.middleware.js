@@ -1,6 +1,6 @@
 const {constant, statusCodes, tokenTypeEnum} = require("../constants");
 const {ApiError} = require("../errors");
-const {authService, tokenService, ActionTokenService} = require("../services");
+const {authService, tokenService, ActionTokenService, previousPasswordService} = require("../services");
 
 
 module.exports = {
@@ -43,6 +43,31 @@ module.exports = {
             }
             req.tokenInfo = tokenInfo;
 
+
+            next();
+        } catch (e) {
+            next(e)
+        }
+    },
+
+    checkPreviousPassword: async (req, res, next) => {
+        try {
+
+            const {user} = req.tokenInfo;
+            const {password} = req.body;
+
+            const oldPasswords = await previousPasswordService.getByUserId(user._id);
+
+            const promises = await Promise.allSettled([
+                ...oldPasswords.map(old => tokenService.comparePasswords(password, old.password)),
+                tokenService.comparePasswords(password, user.password)
+            ]);
+
+            for (const {status} of promises) {
+                if (status === 'fulfilled') {
+                    return next(new ApiError('You can\'t use your old password', statusCodes.BAD_REQUEST));
+                }
+            }
 
             next();
         } catch (e) {
