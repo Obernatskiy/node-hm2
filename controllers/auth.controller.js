@@ -1,12 +1,14 @@
-const {authService, tokenService} = require("../services");
-const {statusCodes:{NO_CONTENT}, emailActionEnum} = require("../constants/");
-const {sendEmail} = require("../services/email.service");
-const {order_arrived} = require("../email-templates");
+const {authService, tokenService, emailService, ActionTokenService, userService} = require("../services");
+const {statusCodes: {NO_CONTENT}, emailActionEnum, constant} = require("../constants/");
+const {tokenTypeEnum} = require("../constants");
+const {FRONTEND_URL} = require("../configs/config");
+
+
 module.exports = {
     login: async (req, res, next) => {
         try {
             const {password, email} = req.body;
-            const {password: hashPassword, _id,name} = req.user;
+            const {password: hashPassword, _id, name} = req.user;
 
             await tokenService.comparePasswords(password, hashPassword)
 
@@ -14,7 +16,7 @@ module.exports = {
 
             await authService.saveTokens({...authTokens, user: _id})
 
-            await sendEmail(email, emailActionEnum.WELCOME, {userName: name});
+            await emailService.sendEmail(email, emailActionEnum.WELCOME, {userName: name});
             // await sendEmail(email, emailActionEnum.FORGOT_PASSWORD);
 
             res.json({
@@ -55,5 +57,50 @@ module.exports = {
         } catch (e) {
             next(e)
         }
+    },
+
+    forgotPassword: async (req, res, next) => {
+        try {
+
+            const {email, _id} = req.user;
+
+            const actionToken = tokenService.createActionToken(tokenTypeEnum.FORGOT_PASSWORD, {_id});
+
+            const url = `${FRONTEND_URL}/password/forgot-pass-page?token=${actionToken}`;
+            await emailService.sendEmail(email, emailActionEnum.FORGOT_PASSWORD, {url});
+
+            await ActionTokenService.createActionToken({
+                tokenType: tokenTypeEnum.FORGOT_PASSWORD,
+                user: _id,
+                token: actionToken,
+            })
+
+            res.json('OK');
+
+
+        } catch (e) {
+            next(e);
+        }
+
+    },
+
+    setNewForgotPassword: async (req, res, next) => {
+        try {
+            const {user} = req.tokenInfo;
+            const {password} = req.body;
+            const token = req.get(constant.AUTHORIZATION)
+
+            await authService.deleteMany({user: user._id});
+            await ActionTokenService.deleteOne({token});
+
+            const hashPassword = await tokenService.hashPassword(password);
+            await userService.updateUserById(user._id, {password: hashPassword});
+
+            res.json('OK')
+
+        } catch (e) {
+            next(e);
+        }
+
     },
 }

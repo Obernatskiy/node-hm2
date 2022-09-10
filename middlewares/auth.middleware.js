@@ -1,6 +1,6 @@
 const {constant, statusCodes, tokenTypeEnum} = require("../constants");
 const {ApiError} = require("../errors");
-const {authService, tokenService} = require("../services");
+const {authService, tokenService, ActionTokenService} = require("../services");
 
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
 
             tokenService.checkToken(access_token);
 
-            const tokenInfo = await authService.getOneWithUser( {access_token});
+            const tokenInfo = await authService.getOneWithUser({access_token});
             if (!tokenInfo) {
                 return next(new ApiError('Not valid token', statusCodes.UNAUTHORIZED))
             }
@@ -26,6 +26,30 @@ module.exports = {
             next(e)
         }
     },
+
+    checkIsActionToken: (tokenType) => async (req, res, next) => {
+        try {
+            const token = req.get(constant.AUTHORIZATION);
+
+            if (!token) {
+                return next(new ApiError('No token', statusCodes.UNAUTHORIZED));
+            }
+            tokenService.checkToken(token, tokenType);
+
+            const tokenInfo = await ActionTokenService.getOneByParamsWithUser({tokenType, token});
+
+            if (!tokenInfo) {
+                return next(new ApiError('Not valid token', statusCodes.UNAUTHORIZED))
+            }
+            req.tokenInfo = tokenInfo;
+
+
+            next();
+        } catch (e) {
+            next(e)
+        }
+    },
+
     checkIsRefreshToken: async (req, res, next) => {
         try {
 
@@ -36,13 +60,13 @@ module.exports = {
 
             tokenService.checkToken(refresh_token, tokenTypeEnum.REFRESH);
 
-            const tokenInfo = await authService.getOneParams( {refresh_token});
+            const tokenInfo = await authService.getOneParams({refresh_token});
 
             if (!tokenInfo) {
                 return next(new ApiError('Not valid token', statusCodes.UNAUTHORIZED))
             }
 
-            req.tokenInfo= tokenInfo;
+            req.tokenInfo = tokenInfo;
 
             next();
         } catch (e) {

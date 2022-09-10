@@ -14,4 +14,7 @@ module.exports = {
     deleteOneByParams(filter) {
         return Auth.deleteOne(filter);
     },
+    deleteMany(filter) {
+        return Auth.deleteMany(filter);
+    },
 }
