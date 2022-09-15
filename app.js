@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const {authRouter, userRouter} = require('./routes');
 const {mainErrorHandler} = require("./errors");
 const {MONGO_URL} = require("./configs/config");
+const runCronJobs = require('./cron');
 
 const app = express();
 
@@ -25,4 +26,5 @@ app.listen(5000, () => {
     console.log('App listen 5000');
     mongoose.connect(MONGO_URL);
 
+    runCronJobs();
 });
