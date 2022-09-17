@@ -5,11 +5,12 @@ const UserSchema = new Schema({
     name: {type: String, trim: true, required: true},
     age: {type: Number, default: 18},
     password: {type: String, required: true},
+    avatar: {type: String, default: ''},
     email: {type: String, trim: true, lowercase: true, required: true}
 }, {timestamps: true});
 
 
-userSchema.statics = { // for schema // THIS - SCHEMA
+UserSchema.statics = { // for schema // THIS - SCHEMA
     testStatic() {
         console.log('THIS IS STATIC ______________________-');
         console.log(this);
@@ -24,7 +25,7 @@ userSchema.statics = { // for schema // THIS - SCHEMA
 
 
 };
-userSchema.methods = { // for single record // THIS - RECORD
+UserSchema.methods = { // for single record // THIS - RECORD
     testMethod() {
         console.log('THIS IS METHOD ______________________-');
         console.log(this);

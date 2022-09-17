@@ -1,4 +1,5 @@
 const express = require('express');
+const fileUpload = require('express-fileupload');
 require('dotenv').config();
 const mongoose = require('mongoose');
 
@@ -12,6 +13,8 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use(fileUpload({}));
 
 app.use('/users', userRouter);
 app.use('/auth', authRouter);

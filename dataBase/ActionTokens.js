@@ -12,4 +12,4 @@ const actionTokenSchema = new Schema({
     versionKey: false
 });
 
-module.exports = model('action_token', carSchema);
+module.exports = model('action_token',actionTokenSchema);
