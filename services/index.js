@@ -6,4 +6,5 @@ module.exports = {
     emailService : require ('./email.service'),
     authService : require ('./auth.service'),
     userService : require ('./user.service'),
+    imageService : require ('./image.service'),
 }
