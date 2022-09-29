@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const {EMAIL, PASSWORD} = require('../constants/regex.enum')
+const {EMAIL, PASSWORD,PHONE} = require('../constants/regex.enum')
 const {ApiError} = require("../errors");
 const {BAD_REQUEST} = require("../constants/statusCode.enum");
 
@@ -15,6 +15,9 @@ const emailValidator = Joi.string().regex(EMAIL)
     .lowercase()
     .trim()
     .error(new ApiError('Email not valid', BAD_REQUEST));
+const phoneValidator = Joi.string().regex(PHONE)
+    .trim()
+    .error(new ApiError('Phone not valid', BAD_REQUEST));
 const passwordValidator = Joi.string().regex(PASSWORD)
     .required()
     .error(new ApiError('Password not valid', BAD_REQUEST));
@@ -22,8 +25,9 @@ const passwordValidator = Joi.string().regex(PASSWORD)
 const newUserValidator = Joi.object({
     name: nameValidator.required(),
     age: ageValidator,
-    email: emailValidator,
-    password: passwordValidator,
+    email: emailValidator.required(),
+    password: passwordValidator.required(),
+    phone: phoneValidator.required(),
 
 });
 const updateUserValidator = Joi.object({

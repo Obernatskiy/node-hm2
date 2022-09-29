@@ -6,6 +6,7 @@ const UserSchema = new Schema({
     age: {type: Number, default: 18},
     password: {type: String, required: true},
     avatar: {type: String, default: ''},
+    phone: { type: String, required: true },
     email: {type: String, trim: true, lowercase: true, required: true}
 }, {timestamps: true});
 

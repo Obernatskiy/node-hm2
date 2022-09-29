@@ -5,4 +5,5 @@ module.exports = {
     statusCodes: require('./statusCode.enum'),
     tokenTypeEnum   : require('./tokenType.enum'),
     emailActionEnum   : require('./emailAction.enum'),
+    smsActionEnum: require('./smsAction.enum'),
 };

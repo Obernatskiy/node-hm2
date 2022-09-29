@@ -7,4 +7,5 @@ module.exports = {
     authService : require ('./auth.service'),
     userService : require ('./user.service'),
     imageService : require ('./image.service'),
+    smsService: require('./sms.service'),
 }

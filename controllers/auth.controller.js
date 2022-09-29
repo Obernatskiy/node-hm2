@@ -4,11 +4,12 @@ const {
     emailService,
     ActionTokenService,
     userService,
-    previousPasswordService
+    previousPasswordService, smsService
 } = require("../services");
-const {statusCodes: {NO_CONTENT}, emailActionEnum, constant} = require("../constants/");
+const {statusCodes: {NO_CONTENT}, emailActionEnum, constant, smsActionEnum} = require("../constants/");
 const {tokenTypeEnum} = require("../constants");
 const {FRONTEND_URL} = require("../configs/config");
+const { smsTemplate } = require('../herpers');
 
 const {User} = require('../dataBase');
 
@@ -17,7 +18,7 @@ module.exports = {
     login: async (req, res, next) => {
         try {
             const {password, email} = req.body;
-            const {_id} = req.user;
+            const {_id,phone, name} = req.user;
 
             await req.user.checkIsPasswordSame(password);
 
@@ -27,6 +28,8 @@ module.exports = {
 
             await emailService.sendEmail(email, emailActionEnum.WELCOME, {userName: name});
             // await sendEmail(email, emailActionEnum.FORGOT_PASSWORD);
+
+            await smsService.sendSMS(phone, smsTemplate[smsActionEnum.LOGIN](name));
 
             res.json({
                 ...authTokens,
